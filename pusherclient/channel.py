@@ -10,6 +10,6 @@ class Channel():
         raise NotImplementedError()
     def _handle_event(self, eventName, data):
         for callback in self.event_callbacks[eventName]:
-            callback(data)
+            callback(eventName, data)
         for callback in self.event_callbacks[None]:
-            callback(data)
+            callback(eventName, data)

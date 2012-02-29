@@ -1,16 +1,11 @@
 import websocket
-try:
-    import simplejson as json
-except:
-    import json
-
+import json
 from threading import Thread, Timer
 import time
 import logging
 
-
 class Connection(Thread):
-    def __init__(self, eventHandler, url, logLevel=logging.INFO):
+    def __init__(self, eventHandler, url, logLevel=logging.WARNING):
         self.socket = None
 
         self.socket_id = ""
@@ -31,7 +26,7 @@ class Connection(Thread):
 
         self.logger = logging.getLogger()
         self.logger.addHandler(logging.StreamHandler())
-        if logLevel == logging.DEBUG:
+        if logLevel <= logging.DEBUG:
             websocket.enableTrace(True)
         self.logger.setLevel(logLevel)
 
@@ -72,7 +67,7 @@ class Connection(Thread):
         self.socket.run_forever()
 
         while (self.needsReconnect):
-            self.logger.info("Attempting to connect again in %s seconds." % self.reconnectInterval)
+            self.logger.info("Attempting to connect again in %s seconds.", self.reconnectInterval)
             self.state = "unavailable"
             time.sleep(self.reconnectInterval)
             self.socket.run_forever()
@@ -82,12 +77,12 @@ class Connection(Thread):
         self.connectionTimer.start()
 
     def _on_error(self, ws, error):
-        self.logger.info("Connection: Error - %s" % error)
+        self.logger.error("Connection: Error - %s", error)
         self.state = "failed"
         self.needsReconnect = True
 
     def _on_message(self, ws, message):
-        self.logger.info("Connection: Message - %s" % message)
+        self.logger.info("Connection: Message - %s", message)
 
         # Stop our timeout timer, since we got some data
         self.connectionTimer.cancel()
@@ -101,7 +96,7 @@ class Connection(Thread):
                     for callback in self.eventCallbacks[params['event']]:
                         callback(params['data'])
                 else:
-                    self.logger.info("Connection: Unhandled event")
+                    self.logger.warning("Connection: Unhandled event: %s", params['event'])
             else:
                 # We've got a channel event.  Lets pass it up to the pusher
                 # so it can be handled by the appropriate channel.
@@ -136,7 +131,7 @@ class Connection(Thread):
         self.state = "failed"
 
     def _connectionTimedOut(self):
-        self.logger.info("Did not receive any data in time.  Reconnecting.")
+        self.logger.warning("Did not receive any data in time.  Reconnecting.")
         self.state = "failed"
         self.needsReconnect = True
         self.socket.close()

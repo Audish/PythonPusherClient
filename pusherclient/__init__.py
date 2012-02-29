@@ -1,18 +1,12 @@
 from channel import Channel
+import logging
 from connection import Connection
-
 import hashlib, hmac
-import time
-
 import thread
-
-try:
-    import simplejson as json
-except:
-    import json
+import json
 
 class Pusher():
-    def __init__(self, applicationKey, encryption=False, secret=None, userdata={}):
+    def __init__(self, applicationKey, encryption=False, secret=None, userdata={}, logLevel=logging.WARNING):
         self.channels = {}
 
         self.secret = secret
@@ -40,7 +34,7 @@ class Pusher():
                                       self.port,
                                       self.path)
 
-        self.connection = Connection(self._connectionHandler, self.url)
+        self.connection = Connection(self._connectionHandler, self.url, logLevel=logLevel)
 
         thread.start_new_thread(self.connection._connect, ())
 

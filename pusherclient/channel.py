@@ -11,3 +11,5 @@ class Channel():
     def _handle_event(self, eventName, data):
         for callback in self.event_callbacks[eventName]:
             callback(data)
+        for callback in self.event_callbacks[None]:
+            callback(data)

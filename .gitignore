@@ -1,0 +1,7 @@
+*.swp
+.DS_Store
+.venv*
+*.egg-info
+*.py[co]
+.env
+*.swf.cache
